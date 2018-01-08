@@ -1,0 +1,191 @@
+#Start of Automation section
+  - alias: 'Sunrise init'
+    trigger:
+      platform: sun
+      event: sunrise
+    action:
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.test_sw3
+      - service: light.turn_off
+        entity_id: light.ge_45606_2way_dimmer_switch_level
+
+  - alias: 'Bedtime'
+    trigger:
+      platform: state
+      entity_id: input_boolean.bedtime
+    action:
+      - service: light.turn_off
+        entity_id: light.linear_wd500z1_wall_dimmer_switch_level
+      - service: light.turn_off
+        entity_id: light.linear_wd500z1_wall_dimmer_switch_level_2
+      - service: light.turn_off
+        entity_id: light._level
+      - service: switch.turn_off
+        entity_id: switch._switch
+      - service: input_boolean.turn_off
+        entity_id: input_boolean.bedtime
+
+  - alias: 'Front Light on at Night'
+    trigger:
+      platform: sun
+      event: sunset
+      offset: '-00:30:00'
+    action:
+      - service: light.turn_on
+        entity_id: light.ge_45606_2way_dimmer_switch_level
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.test_sw3
+  - alias: 'Front Light off - Mon,Wed,Thurs,Fri,Sat,Sun'
+    trigger:
+      platform: time
+      at: '21:00:00'
+    condition:
+      condition: time
+      weekday:
+        - mon
+        - wed
+        - thu
+        - fri
+        - sat
+        - sun
+    action:
+      service: light.turn_off
+      entity_id: light.ge_45606_2way_dimmer_switch_level
+
+  - alias: 'Front Light off - Tues night'
+    trigger:
+      platform: time
+      at: '04:00:00'
+    condition:
+      condition: time
+      weekday:
+        - wed
+    action:
+      service: light.turn_off
+      entity_id: light.ge_45606_2way_dimmer_switch_level
+
+  - alias: 'Front Door turn on Entry Light'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.ecolink_doorwindow_sensor_sensor
+      to: 'on'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.test_sw3
+          state: 'on'
+        - condition: time
+          after: '16:00:00'
+          before: '23:59:00'
+    action:
+      service: switch.turn_on
+      entity_id: switch._switch
+
+  - alias: 'Front Door turn on Porch Light'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.ecolink_doorwindow_sensor_sensor
+      to: 'on'
+    condition: 
+      condition: state
+      entity_id: input_boolean.test_sw3
+      state: 'on'
+    action:
+      service: light.turn_on
+      entity_id: light.ge_45606_2way_dimmer_switch_level
+
+  - alias: 'Garage motion - turn on light'
+    trigger:
+      platform: state
+      entity_id: sensor.vision_zp3102_pir_motion_sensor_alarm_level
+      to: '255'
+    action:
+      service: light.turn_on
+      entity_id: light.linear_wd500z1_wall_dimmer_switch_level_3
+
+  - alias: 'Garage motion - turn off the light'
+    trigger:
+      platform: state
+      entity_id: sensor.vision_zp3102_pir_motion_sensor_alarm_level
+      to: '0'
+      from: '255'
+      for:
+        minutes: 5
+    condition:
+      condition: state
+      entity_id: input_boolean.grg_light_override
+      state: 'off'
+    action:
+      service: light.turn_off
+      entity_id: light.linear_wd500z1_wall_dimmer_switch_level_3
+  
+  - alias: 'Turn on Front Light - Motion'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.skybell_front_door_motion
+      to: 'on'
+    condition:
+      condition: state
+      entity_id: input_boolean.test_sw3
+      state: 'on'
+    action:
+      service: light.turn_on
+      entity_id: light.ge_45606_2way_dimmer_switch_level
+
+  - alias: 'Turn on back porch light'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.ecolink_doorwindow_sensor_sensor_2
+      to: 'on'
+    condition:
+      condition: and
+      conditions:
+        - condition: state
+          entity_id: input_boolean.test_sw3
+          state: 'on'
+        - condition: state
+          entity_id: input_boolean.bk_light_override
+          state: 'off'
+    action:
+      - service: light.turn_on
+        entity_id: light._level_2
+      - service: light.turn_on
+        entity_id: light.linear_wd500z1_wall_dimmer_switch_level_4
+
+  - alias: 'Turn off the back porch light'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.ecolink_doorwindow_sensor_sensor_2
+      to: 'off'
+      for:
+        minutes: 5
+    condition:
+      condition: state
+      entity_id: input_boolean.bk_light_override
+      state: 'off'
+    action:
+      - service: light.turn_off
+        entity_id: light._level_2
+      - service: light.turn_off
+        entity_id: light.linear_wd500z1_wall_dimmer_switch_level_4
+
+  - alias: 'Test Notification'
+    trigger:
+      platform: state
+      entity_id:  input_boolean.test_sw2
+    action:
+      service: notify.notify
+      data:
+        message: "Test Message"
+        title: "Test Title"
+        target: "device/iphone"
+
+  - alias: 'Turn on Basement Light - Ecobee'
+    trigger:
+      platform: state
+      entity_id: binary_sensor.basement_occupancy
+      to: 'on'
+    action:
+      service:  switch.turn_on
+      entity_id: switch.ge_14291_inwall_smart_switch_switch

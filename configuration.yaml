@@ -1,0 +1,165 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret latlocation
+  longitude: !secret longlocation
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 1766
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/Denver
+  # Customization file
+  customize: !include customize.yaml
+
+# Show links to resources in log and frontend
+#introduction:
+
+# Enables the frontend
+frontend:
+
+# Enables configuration UI
+config:
+
+skybell:
+  username: !secret skybelluser
+  password: !secret skybellpassword
+http:
+  #ssl_certificate: /ssl/fullchain.pem
+  #ssl_key: /ssl/privkey.pem
+  # Secrets are defined in the file secrets.yaml
+  # api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  # base_url: example.duckdns.org:8123
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+
+camera:
+  - platform: skybell
+
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+# Discover some devices automatically
+discovery:
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# Text to speech
+tts:
+  - platform: google
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+zwave:
+  usb_path: /dev/ttyACM0
+
+#test
+sensor:
+  - platform: wunderground
+    api_key: !secret wundergroundAPI
+    pws_id: KCOTHORN6
+    monitored_conditions:
+      - temp_f 
+
+ecobee:
+  api_key: !secret ecobeeAPI
+
+#Use input_boolean for virtual switches
+input_boolean:
+  notify_home:
+    name: Test Switch
+    initial: off
+    icon: mdi:car
+  test_sw2:
+    name: Test Switch 2
+    initial: off
+  test_sw3:
+    name: Is Dark
+    initial: off
+  kit_lights:
+    name: Kitchen Lights
+    initial: off
+  grg_light_override:
+    name: Garage Light Override
+    initial: off
+  bk_light_override:
+    name: Back Light Override
+    initial: off
+  bedtime:
+    name: Bedtime
+    initial: off
+
+group:
+  ecobee:
+    name: Ecobee
+    entities:
+      - binary_sensor.main_occupancy
+      - binary_sensor.office_occupancy
+      - binary_sensor.bedroom_occupancy
+      - binary_sensor.basement_occupancy
+      - sensor.main_temperature
+      - sensor.main_humidity
+      - sensor.office_temperature
+      - sensor.bedroom_temperature
+      - sensor.basement_temperature
+      - climate.main
+  kitchen_gr:
+    name: Kitchen Lights
+    entities:
+      - light.linear_wd500z1_wall_dimmer_switch_level
+      - light.linear_wd500z1_wall_dimmer_switch_level_2
+      - light._level
+  automationtab:
+    name: Automations
+    entities:
+      - group.all_automations
+      - group.all_scripts
+      - group.all_switches
+      - group.all_lights
+
+  automation_view:
+    name: Automation
+    view: yes
+    entities:
+      group.automationtab
+
+emulated_hue:
+  expose_by_default: false
+
+notify:
+  - name: pushbullet1
+    platform: pushbullet
+    api_key: !secret pushbulletAPI
+
+binary_sensor:
+  - platform: skybell
+    monitored_conditions:
+    - button
+    - motion
+
+switch:
+  - platform: tplink
+    host: 172.18.252.5
+    name: tphs100
