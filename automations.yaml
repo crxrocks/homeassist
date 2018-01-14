@@ -24,6 +24,11 @@
         entity_id: switch._switch
       - service: input_boolean.turn_off
         entity_id: input_boolean.bedtime
+      - service: light.turn_off
+        entity_id: light._level_2
+      - service: light.turn_off
+        entity_id: light.linear_wd500z1_wall_dimmer_switch_level_4
+      
 
   - alias: 'Front Light on at Night'
     trigger:
